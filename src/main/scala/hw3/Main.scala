@@ -3,11 +3,46 @@ package hw3
 object Main {
   def standardDeviation(vector: List[Double]): Double = ???
 
-  def letterFrequencyRanking(corpus: String): String = ???
+  def letterFrequencyRanking(corpus: String): String = {
+    val forbidden = ' ' :: '\n' :: '\t' :: ':' :: ';' ::
+                    '\\' :: '/' :: '|' ::
+                    '-' :: '_' :: '‐' :: '…' :: '»' :: '«' ::
+                    '.' :: ',' :: '!' :: '¡' :: '?' ::'¿' ::
+                    '(' :: ')' :: '[' :: ']' :: '{' :: '}' ::
+                    '\'' :: '"' :: '`' :: '„' :: '‚' :: Nil
+
+    val letters = List.from(
+      corpus.toLowerCase.foldLeft(Map.empty[Char, Letter]) {
+      (map, char) => {
+        if (map.contains(char)) {
+          map + (char -> map(char).++)
+        } else if (forbidden.contains(char)) {
+          map
+        } else {
+          map + (char -> new Letter(char))
+        }
+      }
+    }.values)
+
+    letters.sortWith(Letter.compare)
+      .map(_.toString).foldLeft("")(_+_)
+  }
 
   def romanji(katakana: String): String = ???
 
-  def gray(bits: Int): List[String] = ???
+  def gray(bits: Int): List[String] = {
+    def inner(n: Int, first: List[String]): List[String] = {
+      if (n == 1) {
+        return first
+      }
+
+      val next: List[String] = first.map(x => s"0$x") ::: first.reverse.map(x => s"1$x")
+      inner(n -1, next)
+    }
+    if (bits == 0) return List.empty[String]
+    else if (bits < 0) throw new IllegalArgumentException
+    inner(bits, "0" :: "1" :: Nil)
+  }
 }
 
 object Katakana {
@@ -36,4 +71,31 @@ object Katakana {
     'u' -> 'ū',
     'o' -> 'ō'
   )
+}
+
+
+class Letter (val char: Char, val count: Int = 1) {
+  def < (other: Letter): Boolean = {
+    if (count < other.count) return true
+    if (count > other.count) return false
+    char > other.char
+  }
+
+  def equals(o: Letter): Boolean = {
+    char == o.char
+  }
+
+  def + (int: Int): Letter = {
+    new Letter(char, count + int)
+  }
+
+  def ++ (): Letter = this + 1
+
+  override def toString: String = char.toString
+
+  override def hashCode(): Int = char.hashCode()
+}
+
+object Letter {
+  def compare (a: Letter, b: Letter) = b < a
 }
