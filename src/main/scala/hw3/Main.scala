@@ -1,7 +1,16 @@
 package hw3
+import scala.math.sqrt
 
 object Main {
-  def standardDeviation(vector: List[Double]): Double = ???
+  def standardDeviation(vector: List[Double]): Double = {
+    val n = vector.length
+    val xn = vector.sum / n
+
+    val sn2 = vector.map(x => {
+      (x - xn) * (x - xn)
+    }).sum / n
+    sqrt(sn2)
+  }
 
   def letterFrequencyRanking(corpus: String): String = {
     val forbidden = ' ' :: '\n' :: '\t' :: ':' :: ';' ::
