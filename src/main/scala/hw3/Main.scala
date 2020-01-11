@@ -1,4 +1,6 @@
 package hw3
+import java.security.InvalidParameterException
+
 import scala.math.sqrt
 
 object Main {
@@ -33,11 +35,47 @@ object Main {
       }
     }.values)
 
-    letters.sortWith(Letter.compare)
-      .map(_.toString).foldLeft("")(_+_)
+    letters.sortWith(Letter.compare).mkString("","","")
   }
 
-  def romanji(katakana: String): String = ???
+  def romanji(katakana: String): String = {
+    katakana.foldLeft[(String, Int)](("", 0)) {
+      (tuple, char) =>
+        if (Katakana.symbols.contains(char)) {
+          val symbol = Katakana.symbols(char)
+
+          if (tuple._2 == 1 && symbol.length == 2) {
+            (s"${tuple._1}${symbol(0)}${symbol(0)}${symbol(1)}", 0)
+          }
+          else if (tuple._2 == 2 && symbol(0) == 'n') {
+            (s"${tuple._1}${symbol(0)}${symbol(0)}", 0)
+          }
+          else if (tuple._2 == 0) {
+            (s"${tuple._1}${symbol.mkString("","","")}", 0)
+          }
+          else {
+            throw new InvalidParameterException()
+          }
+        }
+        else if (Katakana.doubles == char) {
+          (tuple._1, 1)
+        }
+        else if (Katakana.doublesN == char) {
+          (tuple._1, 2)
+        }
+        else if (tuple._1.last != 'n' && Katakana.lengthens == char) {
+          val str = tuple._1.dropRight(1)
+            (s"$str${Katakana.longVowels(tuple._1.last)}", 0)
+        }
+        else if (tuple._1.last == 'i' && Katakana.transformSymbols.contains(char)) {
+          val str = tuple._1.dropRight(1)
+          (s"$str${Katakana.transformSymbols(char)}", 0)
+        }
+        else {
+          throw new InvalidParameterException()
+        }
+    }._1
+  }
 
   def gray(bits: Int): List[String] = {
     def inner(n: Int, first: List[String]): List[String] = {
@@ -80,6 +118,15 @@ object Katakana {
     'u' -> 'ū',
     'o' -> 'ō'
   )
+
+  val transformSymbols = Map (
+    'ャ' -> "ya",
+    'ュ' -> "yu",
+    'ョ' -> "yo"
+  )
+  val doubles = 'ッ'
+  val doublesN = 'ン'
+  val lengthens = 'ー'
 }
 
 
